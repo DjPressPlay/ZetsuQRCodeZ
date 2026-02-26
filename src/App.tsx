@@ -171,10 +171,15 @@ export default function App() {
               },
             },
             {
-              text: "Re-imagine this image as a vibrant, high-contrast, clean-lined cartoon illustration. Use bold, saturated colors and simplified shapes. The result must be a square image with a clear, uncluttered composition. Return only the image.",
+              text: "Transform this image into a professional, high-fidelity digital art masterpiece. Style: Vibrant neo-pop illustration with clean vector-like lines, sophisticated color gradients, and cinematic lighting. Composition: Centered, square format, optimized for high-contrast visibility. The artwork should be detailed yet scannable, maintaining the core essence of the original image while elevating it to a premium artistic standard. Return only the image.",
             },
           ],
         },
+        config: {
+          imageConfig: {
+            aspectRatio: "1:1"
+          }
+        }
       });
 
       let stylizedImageBase64 = '';
@@ -206,34 +211,56 @@ export default function App() {
         bgImg.onerror = reject;
       });
 
-      const size = 1024;
+      const size = 2048;
       canvas.width = size;
       canvas.height = size;
       const scale = size / moduleCount;
 
+      // 1. Draw Background (Upscaled to 2048 for sharpness)
       ctx.drawImage(bgImg, 0, 0, size, size);
 
+      // 2. Add a very subtle "protection" layer to normalize background contrast for the dots
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillRect(0, 0, size, size);
+
+      // 3. Draw Dot Matrix
       for (let row = 0; row < moduleCount; row++) {
         for (let col = 0; col < moduleCount; col++) {
           const isDark = modules.get(row, col);
+          
+          // 3a. Identify Finder Patterns (7x7 at corners)
           const isFinder = (row < 7 && col < 7) || 
                           (row < 7 && col >= moduleCount - 7) || 
                           (row >= moduleCount - 7 && col < 7);
           
-          if (isFinder) continue;
+          // 3b. Identify Alignment Pattern (5x5 pattern in bottom right, usually centered around max-7)
+          // For most common versions, it's at (moduleCount-9, moduleCount-9)
+          const isAlignment = (row >= moduleCount - 9 && row < moduleCount - 4 && col >= moduleCount - 9 && col < moduleCount - 4);
+          
+          if (isFinder || isAlignment) continue;
 
           const centerX = col * scale + scale / 2;
           const centerY = row * scale + scale / 2;
-          const radius = scale * 0.18;
-
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-          ctx.fillStyle = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)';
-          ctx.fill();
+          
+          if (isDark) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, scale * 0.42, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, scale * 0.12, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+          }
         }
       }
 
+      // 4. Draw Functional Patterns (Finders and Alignment)
       const drawFinder = (x: number, y: number) => {
+        ctx.fillStyle = 'white';
+        ctx.fillRect((x - 0.5) * scale, (y - 0.5) * scale, 8 * scale, 8 * scale);
+        
         ctx.fillStyle = 'black';
         ctx.fillRect(x * scale, y * scale, 7 * scale, 7 * scale);
         ctx.fillStyle = 'white';
@@ -242,9 +269,28 @@ export default function App() {
         ctx.fillRect((x + 2) * scale, (y + 2) * scale, 3 * scale, 3 * scale);
       };
 
+      const drawAlignment = (x: number, y: number) => {
+        // Alignment patterns are 5x5
+        ctx.fillStyle = 'white';
+        ctx.fillRect((x - 0.5) * scale, (y - 0.5) * scale, 6 * scale, 6 * scale);
+        
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x * scale, y * scale, 5 * scale, 5 * scale);
+        ctx.fillStyle = 'white';
+        ctx.fillRect((x + 1) * scale, (y + 1) * scale, 3 * scale, 3 * scale);
+        ctx.fillStyle = 'black';
+        ctx.fillRect((x + 2) * scale, (y + 2) * scale, 1 * scale, 1 * scale);
+      };
+
+      // Draw the 3 main finders
       drawFinder(0, 0);
       drawFinder(moduleCount - 7, 0);
       drawFinder(0, moduleCount - 7);
+
+      // Draw the alignment pattern in the bottom right (if version > 1)
+      if (moduleCount > 21) {
+        drawAlignment(moduleCount - 9, moduleCount - 9);
+      }
 
       setResultImage(canvas.toDataURL('image/png'));
     } catch (err: any) {
