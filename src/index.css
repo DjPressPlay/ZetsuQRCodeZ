@@ -1,29 +1,83 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer utilities {
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    body {
+      background: #000000 !important;
+      color: white !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .btn-primary, .btn-secondary, .card {
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+    }
+    img {
+      max-width: 100% !important;
+      page-break-inside: avoid;
+    }
+  }
 }
 
 @layer base {
   body {
-    @apply bg-white text-zinc-900 font-sans antialiased;
+    @apply bg-[#000000] text-white font-sans antialiased;
   }
 }
 
 .card {
-  @apply bg-blue-700 rounded-3xl shadow-lg border border-blue-600 text-white;
+  @apply bg-[#0a0a0a] rounded-3xl shadow-2xl border border-zinc-900 text-white;
 }
 
 .input-label {
-  @apply text-xs font-semibold uppercase tracking-wider text-blue-200 mb-1.5 block;
+  @apply text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1.5 block;
+}
+
+.micro-label {
+  @apply text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600;
 }
 
 .btn-primary {
-  @apply bg-amber-500 text-blue-900 px-6 py-3 rounded-2xl font-black transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-md;
+  @apply bg-amber-500 text-black px-8 py-4 rounded-full font-black uppercase tracking-wider transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-[0_0_30px_-10px_rgba(245,158,11,0.5)];
 }
 
 .btn-secondary {
-  @apply bg-blue-800 text-white border border-blue-600 px-6 py-3 rounded-2xl font-medium transition-all hover:bg-blue-700 active:scale-95;
+  @apply bg-black text-white border border-zinc-800 px-8 py-4 rounded-full font-bold uppercase tracking-wider transition-all hover:bg-zinc-900 active:scale-95;
+}
+
+.luxury-border-gold {
+  @apply border-[1px] border-transparent bg-clip-padding relative;
+  background-image: 
+    linear-gradient(var(--luxury-bg), var(--luxury-bg)), 
+    linear-gradient(90deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-size: 200% auto;
+  animation: luxury-shimmer 8s linear infinite;
+}
+
+.luxury-border-silver {
+  @apply border-2 border-transparent bg-clip-padding relative shadow-[0_0_20px_-5px_rgba(192,192,192,0.3)];
+  background-image: 
+    linear-gradient(var(--luxury-bg), var(--luxury-bg)), 
+    linear-gradient(90deg, #70706F, #E7E7E7, #BDBDBD, #E7E7E7, #70706F);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-size: 200% auto;
+  animation: luxury-shimmer 8s linear infinite;
+}
+
+@keyframes luxury-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
